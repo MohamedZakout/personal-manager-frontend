@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Relay — Project Operations
 
-## Getting Started
+A Next.js frontend for the NestJS API in `../backend`. It covers projects, provider accounts, saved command runbooks, encrypted credentials, attachments, categories, user management, and profile settings.
 
-First, run the development server:
+## Run locally
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1. Start the API (it listens on port 3001 by default):
+
+   ```bash
+   cd ../backend
+   npm run start:dev
+   ```
+
+2. Start the frontend:
+
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+3. Open http://localhost:3000.
+
+The seeded admin account is `mohamed.zakout@outlook.com` with password `2102`. Change it after signing in if this is shared.
+
+## Configuration
+
+Create `.env.local` if it does not exist:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The backend must allow the frontend origin through `CORS_ORIGINS` (already set to `http://localhost:3000,http://localhost:5173` in the shipped `.env.example`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `lib/api.ts` is the typed API client. It unwraps the backend's `{ data: ... }` envelope, sends the bearer token from local storage, and exposes one small object per resource.
+- `components/providers/app-providers.tsx` owns the auth session and toast queue.
+- `components/shell/app-shell.tsx` is the authenticated layout.
+- `components/managers/*` hold the reusable CRUD panels for credentials, runbooks, and files on project and account detail pages.
+- All protected screens guard on the client and use `/api/me` on load to validate a stored token.
 
-## Learn More
+## Checks
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+npm run build
+```
