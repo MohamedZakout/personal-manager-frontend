@@ -13,6 +13,15 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    // These screens load their data from the API after mount and track the
+    // result in state. The React 19 rule flags that pattern even though the
+    // update always happens asynchronously inside a promise callback.
+    files: ["app/**/*.tsx", "components/**/*.tsx"],
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

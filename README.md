@@ -1,4 +1,4 @@
-# Relay — Project Operations
+# Personal Manager
 
 A Next.js frontend for the NestJS API in `../backend`. It covers projects, provider accounts, saved command runbooks, encrypted credentials, attachments, categories, user management, and profile settings.
 
