@@ -15,7 +15,7 @@ import type {
 } from "./types";
 
 const API_BASE = (
-  process.env.NEXT_PUBLIC_API_URL ?? "/manager-api"
+  process.env.NEXT_PUBLIC_API_URL ?? ""
 ).replace(/\/$/, "");
 
 export const TOKEN_KEY = "relay.token";
