@@ -15,7 +15,7 @@ import type {
 } from "./types";
 
 const API_BASE = (
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000"
 ).replace(/\/$/, "");
 
 export const TOKEN_KEY = "relay.token";
