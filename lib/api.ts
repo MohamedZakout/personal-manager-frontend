@@ -15,7 +15,7 @@ import type {
 } from "./types";
 
 const API_BASE = (
-    process.env.NEXT_PUBLIC_API_URL ?? "/manager-api"
+  process.env.NEXT_PUBLIC_API_URL ?? "/manager-api"
 ).replace(/\/$/, "");
 
 export const TOKEN_KEY = "relay.token";
@@ -64,7 +64,7 @@ async function request<T>(
   path: string,
   { method = "GET", body, params, signal, raw = false }: RequestOptions = {},
 ): Promise<T> {
-  const url = new URL(`${API_BASE}/api${path}`);
+  const url = new URL(`${API_BASE}/api${path}`, window.location.origin);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== "") {
@@ -74,10 +74,13 @@ async function request<T>(
   }
 
   const headers: Record<string, string> = { Accept: "application/json" };
+  
   const token = getToken();
+
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let payload: BodyInit | undefined;
+
   if (body instanceof FormData) {
     payload = body;
   } else if (body !== undefined) {
@@ -86,6 +89,7 @@ async function request<T>(
   }
 
   let response: Response;
+
   try {
     response = await fetch(url, { method, headers, body: payload, signal });
   } catch (error) {
@@ -98,7 +102,9 @@ async function request<T>(
   if (response.status === 204) return undefined as T;
 
   const text = await response.text();
+
   let parsed: unknown = null;
+
   if (text) {
     try {
       parsed = JSON.parse(text);
@@ -116,6 +122,7 @@ async function request<T>(
   }
 
   if (raw) return parsed as T;
+
   if (
     parsed !== null &&
     typeof parsed === "object" &&
@@ -125,6 +132,7 @@ async function request<T>(
   ) {
     return (parsed as { data: T }).data;
   }
+
   return parsed as T;
 }
 
@@ -139,8 +147,7 @@ export const api = {
 };
 
 export const authApi = {
-  login: (email: string, password: string) =>
-    api.post<LoginResponse>("/login", { email, password }),
+  login: (email: string, password: string) => api.post<LoginResponse>("/login", { email, password }),
   logout: () => api.post<void>("/logout"),
   me: () => api.get<User>("/me"),
 };
@@ -170,12 +177,10 @@ export const projectsApi = {
 };
 
 export const accountsApi = {
-  list: (params?: RequestOptions["params"]) =>
-    api.get<Account[]>("/accounts", params),
+  list: (params?: RequestOptions["params"]) => api.get<Account[]>("/accounts", params),
   show: (id: number) => api.get<Account>(`/accounts/${id}`),
   create: (body: Record<string, unknown>) => api.post<Account>("/accounts", body),
-  update: (id: number, body: Record<string, unknown>) =>
-    api.put<Account>(`/accounts/${id}`, body),
+  update: (id: number, body: Record<string, unknown>) => api.put<Account>(`/accounts/${id}`, body),
   delete: (id: number) => api.delete<void>(`/accounts/${id}`),
   reorder: (ids: number[]) => api.put<void>("/accounts/reorder", { ids }),
 };
@@ -195,16 +200,11 @@ export const commandsApi = {
   library: () => api.raw<CommandLibrary>("/commands"),
   list: () => api.raw<CommandLibrary>("/commands"),
   show: (id: number) => api.get<Command>(`/commands/${id}`),
-  create: (scope: CommandScope, body: Record<string, unknown>) =>
-    api.post<Command>(commandBase(scope), body),
-  update: (scope: CommandScope, id: number, body: Record<string, unknown>) =>
-    api.put<Command>(`${commandBase(scope)}/${id}`, body),
-  delete: (scope: CommandScope, id: number) =>
-    api.delete<void>(`${commandBase(scope)}/${id}`),
-  createFolder: (name: string) =>
-    api.post<CommandFolder>("/command-folders", { name }),
-  updateFolder: (id: number, name: string) =>
-    api.put<CommandFolder>(`/command-folders/${id}`, { name }),
+  create: (scope: CommandScope, body: Record<string, unknown>) => api.post<Command>(commandBase(scope), body),
+  update: (scope: CommandScope, id: number, body: Record<string, unknown>) => api.put<Command>(`${commandBase(scope)}/${id}`, body),
+  delete: (scope: CommandScope, id: number) => api.delete<void>(`${commandBase(scope)}/${id}`),
+  createFolder: (name: string) => api.post<CommandFolder>("/command-folders", { name }),
+  updateFolder: (id: number, name: string) => api.put<CommandFolder>(`/command-folders/${id}`, { name }),
   deleteFolder: (id: number) => api.delete<void>(`/command-folders/${id}`),
 };
 
@@ -219,16 +219,11 @@ function credentialBase(scope: CredentialScope): string {
 }
 
 export const credentialsApi = {
-  list: (scope: CredentialScope) =>
-    api.get<Credential[]>(credentialBase(scope)),
-  create: (scope: CredentialScope, body: Record<string, unknown>) =>
-    api.post<Credential>(credentialBase(scope), body),
-  update: (scope: CredentialScope, id: number, body: Record<string, unknown>) =>
-    api.put<Credential>(`${credentialBase(scope)}/${id}`, body),
-  reveal: (scope: CredentialScope, id: number) =>
-    api.get<Credential>(`${credentialBase(scope)}/${id}/reveal`),
-  delete: (scope: CredentialScope, id: number) =>
-    api.delete<void>(`${credentialBase(scope)}/${id}`),
+  list: (scope: CredentialScope) => api.get<Credential[]>(credentialBase(scope)),
+  create: (scope: CredentialScope, body: Record<string, unknown>) => api.post<Credential>(credentialBase(scope), body),
+  update: (scope: CredentialScope, id: number, body: Record<string, unknown>) => api.put<Credential>(`${credentialBase(scope)}/${id}`, body),
+  reveal: (scope: CredentialScope, id: number) => api.get<Credential>(`${credentialBase(scope)}/${id}/reveal`),
+  delete: (scope: CredentialScope, id: number) => api.delete<void>(`${credentialBase(scope)}/${id}`),
 };
 
 export type FileScope =
@@ -243,28 +238,26 @@ function fileBase(scope: FileScope): string {
 }
 
 export const filesApi = {
-  list: (scope: FileScope = { kind: "library" }) =>
-    api.get<FileRecord[]>(fileBase(scope)),
-  upload: (scope: FileScope, formData: FormData) =>
-    api.upload<FileRecord>(fileBase(scope), formData),
-  delete: (scope: FileScope, id: number) =>
-    api.delete<void>(`${fileBase(scope)}/${id}`),
-  downloadUrl: (scope: FileScope, file: FileRecord) =>
-    file.download_url || `${API_BASE}/api${fileBase(scope)}/${file.id}`,
+  list: (scope: FileScope = { kind: "library" }) => api.get<FileRecord[]>(fileBase(scope)),
+  upload: (scope: FileScope, formData: FormData) => api.upload<FileRecord>(fileBase(scope), formData),
+  delete: (scope: FileScope, id: number) => api.delete<void>(`${fileBase(scope)}/${id}`),
+  downloadUrl: (scope: FileScope, file: FileRecord) => file.download_url || `${API_BASE}/api${fileBase(scope)}/${file.id}`,
 };
 
 export const usersApi = {
   list: () => api.get<User[]>("/users"),
   show: (id: number) => api.get<User>(`/users/${id}`),
   create: (body: Record<string, unknown>) => api.post<User>("/users", body),
-  update: (id: number, body: Record<string, unknown>) =>
-    api.put<User>(`/users/${id}`, body),
+  update: (id: number, body: Record<string, unknown>) => api.put<User>(`/users/${id}`, body),
   delete: (id: number) => api.delete<void>(`/users/${id}`),
 };
 
 export const profileApi = {
-  update: (body: { name: string; email: string; current_password?: string }) =>
-    api.put<User>("/profile", body),
+  update: (body: { 
+    name: string; 
+    email: string; 
+    current_password?: string 
+  }) => api.put<User>("/profile", body),
   updatePassword: (body: {
     current_password: string;
     password: string;

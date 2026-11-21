@@ -50,7 +50,7 @@ export function FileManager({ scope }: { scope: FileScope }) {
     try {
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${getToken() ?? ""}` },
-      });
+      },);
       if (!response.ok) throw new Error("Download failed");
       const blob = await response.blob();
       const objectUrl = URL.createObjectURL(blob);
